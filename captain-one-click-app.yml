@@ -1,0 +1,51 @@
+captainVersion: 4
+services:
+  $$cap_appname-caddy:
+    image: grayblock/searxng-caddy:latest
+    restart: always
+    volumes:
+      - $$cap_appname-caddy-data:/data
+      - $$cap_appname-caddy-config:/config
+    environment:
+      SEARXNG_HOSTNAME: $$cap_appname.$$cap_root_domain
+      SEARXNG_TLS: internal
+    caproverExtra:
+      containerHttpPort: 80
+
+  $$cap_appname-redis:
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: always
+    volumes:
+      - $$cap_appname-redis-data:/data
+    caproverExtra:
+      notExposeAsWebApp: 'true'
+
+  $$cap_appname-searxng:
+    image: grayblock/searxng-custom:latest
+    restart: always
+    environment:
+      SEARXNG_BASE_URL: https://$$cap_appname.$$cap_root_domain/
+      UWSGI_WORKERS: 8
+      UWSGI_THREADS: 8
+    caproverExtra:
+      containerHttpPort: 8080
+
+caproverOneClickApp:
+  variables:
+    - id: $$cap_appname
+      label: Application Name
+      defaultValue: searxng
+      description: Name of your SearXNG application
+      validRegex: /^[a-z0-9]+$/
+
+  instructions:
+    start: >-
+      This will deploy SearXNG with Caddy as reverse proxy and Redis for caching.
+      The deployment includes three containers: SearXNG, Redis, and Caddy.
+    end: >-
+      SearXNG is deployed and will be available at $$cap_appname.$$cap_root_domain
+      It may take a few minutes for the service to be fully ready.
+
+  displayName: SearXNG
+  description: SearXNG is a privacy-respecting, hackable metasearch engine
