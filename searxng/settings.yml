@@ -10,9 +10,12 @@ search:
 
 server:
   # base_url is defined in the SEARXNG_BASE_URL environment variable, see .env and docker-compose.yml
-  secret_key: 'kyz-2736549867934' # change this!
+  secret_key: 'REPLACE_WITH_OUTPUT_OF: openssl rand -hex 32'
   limiter: false # can be disabled for a private instance
   image_proxy: true
+  suspended_times:
+    SearxEngineTooManyRequests: 60    # reduced from 3600s (1hr) to 60s for agent use
+    SearxEngineCaptcha: 120           # reduced from default for private instance
 ui:
   static_use_hash: true
 redis:
